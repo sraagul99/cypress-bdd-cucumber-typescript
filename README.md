@@ -98,8 +98,8 @@ Update `.env` with the target URL and demo credentials:
 
 ```dotenv
 CYPRESS_BASE_URL=https://opensource-demo.orangehrmlive.com
-CYPRESS_ORANGEHRM_USERNAME=your_demo_username
-CYPRESS_ORANGEHRM_PASSWORD=your_demo_password
+CYPRESS_ORANGEHRM_USERNAME=Admin
+CYPRESS_ORANGEHRM_PASSWORD=admin123
 ```
 
 Keep `.env` local; never commit credentials, production/customer data, or sensitive information in test evidence.

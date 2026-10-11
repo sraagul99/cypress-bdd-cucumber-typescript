@@ -24,9 +24,9 @@ export default defineConfig({
       }));
 
       config.env.username =
-        process.env.CYPRESS_ORANGEHRM_USERNAME ?? config.env.username;
+        process.env.CYPRESS_ORANGEHRM_USERNAME || config.env.username || "Admin";
       config.env.password =
-        process.env.CYPRESS_ORANGEHRM_PASSWORD ?? config.env.password;
+        process.env.CYPRESS_ORANGEHRM_PASSWORD || config.env.password || "admin123";
 
       return config;
     },
