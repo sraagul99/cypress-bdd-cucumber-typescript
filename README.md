@@ -2,66 +2,168 @@
 
 **Cypress · Cucumber/Gherkin · TypeScript · Manual QA · GitHub Actions**
 
-A practical test engineering project for the OrangeHRM public demo. It combines structured manual testing with Behavior-Driven Development (BDD) UI automation using Cypress, Gherkin feature files, TypeScript step definitions, reusable page objects, and continuous integration.
+A practical test engineering project for the public OrangeHRM demo. It combines risk-based manual testing with maintainable Behavior-Driven Development (BDD) UI automation using Cypress, Gherkin feature files, TypeScript step definitions, Page Object Model, test fixtures, and CI.
 
-> **Execution integrity:** Test plans and test cases are not evidence of execution. Manual cases start as **Not Run** and should be updated only after running them. Automated outcomes must be taken from actual CI or local test results. The public demo and its data/UI can change.
+> **Execution integrity:** Manual cases start as Not Run and should be updated only after real execution. Automation results must be taken from actual local or CI runs. The public demo and its data/UI can change.
 
-## Project goals
+## Project objectives
 
-- Design and document risk-based manual tests.
-- Express selected behaviors in readable Gherkin.
-- Connect feature files to maintainable TypeScript step definitions.
-- Reuse page objects, fixtures, commands, and configuration.
-- Run automated scenarios in GitHub Actions and preserve useful evidence.
-- Maintain traceability between requirements, manual cases, automation, and defects.
+- Design test coverage from observable behavior and risk.
+- Document manual tests with reproducible steps, test data, expected results, status, and evidence.
+- Express selected stable workflows in readable Gherkin.
+- Connect feature files to TypeScript step definitions and reusable page objects.
+- Run the suite in GitHub Actions and retain generated reports/evidence.
+- Maintain traceability between manual cases, automation scenarios, and defects.
+
+## Technology stack
+
+- Cypress E2E
+- Cucumber/Gherkin via @badeball/cypress-cucumber-preprocessor
+- TypeScript
+- esbuild preprocessor
+- Node.js / npm
+- GitHub Actions
 
 ## Application under test
 
 - **Application:** OrangeHRM Open Source demo
 - **URL:** https://opensource-demo.orangehrmlive.com/web/index.php/auth/login
-- **Initial scope:** Authentication, PIM employee management, and core module navigation
+- **Initial scope:** Authentication, PIM employee management, and main module navigation
 - **Test data:** Synthetic portfolio data only. Never commit credentials or production/customer data.
 
-## Repository areas
+## Repository structure
 
-- `cypress/e2e/features/` — Gherkin feature files.
-- `cypress/e2e/step-definitions/` — TypeScript step implementations.
-- `cypress/pages/` — Page Object Model.
-- `cypress/fixtures/` — Synthetic test data.
-- `manual-testing/` — Test plan, scenarios, detailed CSV cases, defects, and execution reporting.
-- `docs/` — Test strategy, traceability, and defect lifecycle.
-- `.github/workflows/` — CI configuration.
-
-## Local setup
-
-Requires Node.js 20+ and npm.
-
-```bash
-npm install
-npx cypress install
-```
-
-Copy `.env.example` to `.env` and set credentials for an authorized OrangeHRM demo account. Never commit `.env`.
-
-```bash
-npm run cy:open
-npm test
-```
-
-Credential-dependent scenarios should be marked/skipped when authorized credentials are unavailable; don't hard-code credentials in source control.
+    .
+    ├── .github/workflows/cypress.yml
+    ├── cypress/
+    │   ├── e2e/
+    │   │   ├── features/
+    │   │   │   ├── authentication/login.feature
+    │   │   │   ├── pim/employee-management.feature
+    │   │   │   └── navigation/core-navigation.feature
+    │   │   └── step-definitions/
+    │   │       ├── authentication.steps.ts
+    │   │       ├── pim.steps.ts
+    │   │       └── navigation.steps.ts
+    │   ├── fixtures/employee.json
+    │   ├── pages/LoginPage.ts
+    │   ├── pages/EmployeePage.ts
+    │   └── support/
+    │       ├── commands.ts
+    │       └── e2e.ts
+    ├── manual-testing/
+    │   ├── TEST-PLAN.md
+    │   ├── TEST-SCENARIOS.md
+    │   ├── TEST-CASES.csv
+    │   ├── BUG-REPORTS.md
+    │   └── TEST-EXECUTION-REPORT.md
+    ├── docs/
+    │   ├── test-strategy.md
+    │   ├── TEST-EXECUTION-GUIDE.md
+    │   ├── TRACEABILITY-MATRIX.md
+    │   └── defect-lifecycle.md
+    ├── .env.example
+    ├── cypress.config.ts
+    ├── package.json
+    └── tsconfig.json
 
 ## Manual QA deliverables
 
-The manual test suite includes a test plan, prioritized scenarios, detailed test cases with execution status fields, a defect-reporting template, and an execution-summary template. Record environment, browser, date, actual behavior, evidence, and defect references when executing cases.
+The manual suite contains **38 test cases** across authentication, PIM, navigation, usability, regression, and security-smoke review.
 
-## Automation quality standards
+- **TEST-PLAN.md:** objective, scope, approach, environment, entry/exit criteria, risks, and deliverables.
+- **TEST-SCENARIOS.md:** scenario inventory with priorities, techniques, and automation links.
+- **TEST-CASES.csv:** test case IDs, preconditions, steps, data, expected results, automation mapping, execution status, actual result, defect ID, and evidence link.
+- **BUG-REPORTS.md:** defect register (currently no verified defects claimed) and reusable reporting template.
+- **TEST-EXECUTION-REPORT.md:** run metadata, status counts, defects, exit assessment, and remaining risk.
 
-- Gherkin describes observable behavior, not implementation details.
-- Step definitions reuse common actions and avoid duplicate wording.
-- Assertions verify the expected application state, not merely that a click occurred.
-- Test data is synthetic and unique where possible.
-- Credentials are configured through environment variables or CI secrets.
-- CI failures are triaged into application defects, automation defects, and environment issues.
+Manual execution results are deliberately left as **Not Run** until tests are performed. A planned case is not a passed case.
+
+## BDD automation coverage
+
+### Authentication
+- Empty credentials produce required-field validation.
+- Invalid credentials produce a visible authentication error.
+- Authorized demo user can reach the dashboard when credentials are configured.
+
+### PIM employee management
+- Required-field validation on Add Employee.
+- Create an employee with unique synthetic values and verify saved details.
+- Confirm Employee List and Search controls are available.
+
+### Navigation
+- Scenario Outline checks PIM, Leave, Time, and Recruitment module routes for an authenticated user.
+
+The feature files describe behavior; their TypeScript step definitions implement actions/assertions. Page objects centralize selectors/actions. Credential-dependent scenarios short-circuit when credentials are unavailable; Cypress may show them as pending in its summary. Inspect actual result counts rather than interpreting pending/skipped scenarios as passed.
+
+## Local setup
+
+Requires Node.js 22+ and npm.
+
+    npm install
+    npx cypress install
+
+Copy .env.example to .env and enter an authorized OrangeHRM demo account. The local .env file is ignored by Git.
+
+    CYPRESS_BASE_URL=https://opensource-demo.orangehrmlive.com
+    CYPRESS_ORANGEHRM_USERNAME=your_demo_username
+    CYPRESS_ORANGEHRM_PASSWORD=your_demo_password
+
+Never commit real credentials. Do not add secrets to screenshots, CSV test data, bug reports, or source code.
+
+## Run tests
+
+Open Cypress:
+
+    npm run cy:open
+
+Run all feature files headlessly:
+
+    npm test
+
+Run scenarios tagged @smoke:
+
+    npm run test:smoke
+
+Run scenarios tagged @regression:
+
+    npm run test:regression
+
+Cucumber JSON and HTML reports are configured under cypress/reports/. Cypress screenshots on failure and videos are retained as available artifacts. The interactive Cypress runner may not generate the same Cucumber JSON output as a headless run.
+
+## Continuous integration
+
+GitHub Actions runs the Cucumber suite on pushes, pull requests, and manual dispatch. For authenticated coverage, configure these repository Actions secrets:
+
+- ORANGEHRM_USERNAME
+- ORANGEHRM_PASSWORD
+
+An optional Actions variable named ORANGEHRM_BASE_URL can override the target URL. The workflow uploads available Cucumber reports, screenshots, and videos.
+
+A workflow file does not prove that tests passed. Review the Actions tab for the actual run status, pass/fail/skip counts, and artifact downloads.
+
+## Traceability and reporting
+
+The traceability matrix maps representative behaviors to manual scenario IDs, case IDs, and Gherkin files. Maintain it as coverage changes.
+
+Triage failures as one of:
+- Product behavior that violates an established expectation.
+- Automation or locator defect.
+- Environment/demo availability issue.
+- Test data or credential configuration issue.
+- Unclear requirement that needs clarification.
+
+Never report a product defect based on an automation failure alone.
+
+## Quality principles
+
+1. Prefer meaningful assertions that validate results, not just actions.
+2. Keep feature scenarios business-readable and focused.
+3. Keep locators and shared behavior reusable.
+4. Generate unique synthetic test data for record-creation flows.
+5. Avoid arbitrary waits and fragile assumptions about seeded demo records.
+6. Separate Pass, Fail, Blocked, Skipped, and Not Run.
+7. Report only metrics supported by actual execution results.
 
 ## Author
 
