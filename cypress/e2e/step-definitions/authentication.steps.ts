@@ -13,7 +13,7 @@ Given("I am signed in with the configured demo account", function () {
   const username = Cypress.env("username") as string | undefined;
   const password = Cypress.env("password") as string | undefined;
 
-  // Cucumber recognizes the "skipped" return value and prevents later steps from running.
+  // Short-circuit auth-dependent steps if authorized credentials are not configured.
   if (!username || !password) {
     return "skipped";
   }
@@ -31,6 +31,14 @@ When("I sign in with username {string} and an invalid password", (username: stri
   loginPage.submit();
 });
 
+When("I enter a dummy password", () => {
+  loginPage.passwordInput().clear().type("Portfolio-Dummy-Password-123!", { log: false });
+});
+
+When("I refresh the login page", () => {
+  cy.reload();
+});
+
 Then("required-field validation should be displayed on the login form", () => {
   cy.get(".oxd-input-field-error-message")
     .should("be.visible")
@@ -46,6 +54,18 @@ Then("an invalid-credentials message should be displayed", () => {
 Then("I should remain on the login page", () => {
   cy.url().should("include", "/auth/login");
   loginPage.submitButton().should("be.visible");
+});
+
+Then("the password should remain masked", () => {
+  loginPage.passwordInput()
+    .should("have.attr", "type", "password")
+    .and("be.visible");
+});
+
+Then("the login form should remain usable", () => {
+  loginPage.usernameInput().should("be.visible").and("be.enabled");
+  loginPage.passwordInput().should("be.visible").and("be.enabled");
+  loginPage.submitButton().should("be.visible").and("be.enabled");
 });
 
 Then("the dashboard should be displayed", () => {
