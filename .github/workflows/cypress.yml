@@ -16,8 +16,8 @@ jobs:
     timeout-minutes: 20
     env:
       CYPRESS_BASE_URL: ${{ vars.ORANGEHRM_BASE_URL || 'https://opensource-demo.orangehrmlive.com' }}
-      CYPRESS_ORANGEHRM_USERNAME: ${{ secrets.ORANGEHRM_USERNAME }}
-      CYPRESS_ORANGEHRM_PASSWORD: ${{ secrets.ORANGEHRM_PASSWORD }}
+      CYPRESS_ORANGEHRM_USERNAME: ${{ secrets.ORANGEHRM_USERNAME || 'Admin' }}
+      CYPRESS_ORANGEHRM_PASSWORD: ${{ secrets.ORANGEHRM_PASSWORD || 'admin123' }}
 
     steps:
       - name: Checkout repository
