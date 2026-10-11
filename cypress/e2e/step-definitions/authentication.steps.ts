@@ -9,8 +9,16 @@ Given("I am on the OrangeHRM login page", () => {
   loginPage.passwordInput().should("be.visible");
 });
 
-Given("I am signed in with the configured demo account", () => {
-  cy.login();
+Given("I am signed in with the configured demo account", function () {
+  const username = Cypress.env("username") as string | undefined;
+  const password = Cypress.env("password") as string | undefined;
+
+  // Cucumber recognizes the "skipped" return value and prevents later steps from running.
+  if (!username || !password) {
+    return "skipped";
+  }
+
+  cy.login(username, password);
 });
 
 When("I submit the login form without credentials", () => {
