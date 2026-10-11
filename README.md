@@ -94,11 +94,11 @@ Manual execution results are deliberately left as **Not Run** until tests are pe
 ### Navigation
 - Scenario Outline checks PIM, Leave, Time, and Recruitment module routes for an authenticated user.
 
-The feature files describe behavior; their paired TypeScript step definitions implement actions/assertions. The page objects centralize selectors/actions. Credential-dependent scenarios are skipped by the step definition when authorized credentials are unavailable; inspect the actual result counts rather than interpreting skipped cases as passed.
+The feature files describe behavior; their TypeScript step definitions implement actions/assertions. Page objects centralize selectors/actions. Credential-dependent scenarios short-circuit when credentials are unavailable; Cypress may show them as pending in its summary. Inspect actual result counts rather than interpreting pending/skipped scenarios as passed.
 
 ## Local setup
 
-Requires Node.js 20+ and npm.
+Requires Node.js 22+ and npm.
 
     npm install
     npx cypress install
