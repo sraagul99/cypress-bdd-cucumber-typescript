@@ -8,8 +8,8 @@
     "cy:run": "cypress run",
     "test": "cypress run",
     "test:ci": "cypress run --browser electron",
-    "test:smoke": "cypress run --env tags=@smoke",
-    "test:regression": "cypress run --env tags=@regression"
+    "test:smoke": "cypress run --env filterSpecs=true,tags=@smoke",
+    "test:regression": "cypress run --env filterSpecs=true,tags=@regression"
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "~28.0.1",
