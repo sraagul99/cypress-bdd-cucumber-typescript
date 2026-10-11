@@ -17,6 +17,18 @@ Feature: OrangeHRM authentication
     Then an invalid-credentials message should be displayed
     And I should remain on the login page
 
+  @smoke @security
+  Scenario: Password input masks typed characters
+    Given I am on the OrangeHRM login page
+    When I enter a dummy password
+    Then the password should remain masked
+
+  @smoke
+  Scenario: Login page remains usable after refresh
+    Given I am on the OrangeHRM login page
+    When I refresh the login page
+    Then the login form should remain usable
+
   @authenticated @smoke
   Scenario: Authorized user can access the dashboard
     Given I am signed in with the configured demo account
