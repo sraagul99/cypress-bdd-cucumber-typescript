@@ -1,0 +1,36 @@
+{
+  "name": "cypress-bdd-cucumber-typescript",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Professional Cypress-Cucumber BDD automation and manual QA project for OrangeHRM.",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "test": "cypress run",
+    "test:ci": "cypress run --browser electron",
+    "test:smoke": "cypress run --env tags=@smoke",
+    "test:regression": "cypress run --env tags=@regression"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "~28.0.1",
+    "@bahmutov/cypress-esbuild-preprocessor": "~2.2.8",
+    "@types/node": "^22.15.30",
+    "cypress": "^14.5.0",
+    "dotenv": "^16.5.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.3"
+  },
+  "cypress-cucumber-preprocessor": {
+    "stepDefinitions": [
+      "cypress/e2e/step-definitions/**/*.ts"
+    ],
+    "json": {
+      "enabled": true,
+      "output": "cypress/reports/cucumber-report.json"
+    },
+    "html": {
+      "enabled": true,
+      "output": "cypress/reports/cucumber-report.html"
+    }
+  }
+}
