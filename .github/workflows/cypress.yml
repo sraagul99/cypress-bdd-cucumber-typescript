@@ -1,0 +1,47 @@
+name: Cypress Cucumber BDD
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bdd:
+    name: Run Gherkin scenarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CYPRESS_BASE_URL: ${{ vars.ORANGEHRM_BASE_URL || 'https://opensource-demo.orangehrmlive.com' }}
+      CYPRESS_ORANGEHRM_USERNAME: ${{ secrets.ORANGEHRM_USERNAME }}
+      CYPRESS_ORANGEHRM_PASSWORD: ${{ secrets.ORANGEHRM_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Cypress-Cucumber scenarios
+        run: npm run test:ci
+
+      - name: Upload Cucumber report and Cypress evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-cypress-evidence
+          path: |
+            cypress/reports/
+            cypress/screenshots/
+            cypress/videos/
+          if-no-files-found: ignore
+          retention-days: 14
