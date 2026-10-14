@@ -30,10 +30,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r job-hunter/requirements.txt
 
-      - name: Search public results and send Telegram alerts
+      - name: Search public results and send email alerts
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
         run: python job-hunter/job_hunter.py
 
       - name: Save de-duplication state
