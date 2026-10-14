@@ -111,6 +111,10 @@ def telegram_send(message: str) -> None:
         raise RuntimeError(f"Telegram API returned an error: {payload}")
 
 def main() -> None:
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Telegram is not configured. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID as repository Actions secrets, then run this workflow again.")
+        return
+
     seen = load_seen()
     candidates: dict[str, dict[str, str]] = {}
     errors = []
