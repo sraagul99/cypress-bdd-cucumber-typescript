@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Find publicly indexed LinkedIn QA vacancies and recruiter posts, then alert via Telegram."""
+"""Find publicly indexed LinkedIn QA vacancies and recruiter posts, then send email alerts."""
 from __future__ import annotations
 
 import html
 import json
+import smtplib
+from email.message import EmailMessage
 import os
 import re
 import time
@@ -15,8 +17,9 @@ import requests
 
 ROOT = Path(__file__).resolve().parent
 SEEN_FILE = ROOT / "seen_jobs.json"
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+EMAIL_TO = os.getenv("EMAIL_TO", "").strip()
+EMAIL_SENDER = os.getenv("EMAIL_SENDER", "").strip()
+EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD", "").strip()
 MAX_SEEN = 1500
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; SriLankaQAJobHunter/1.0)"}
 
@@ -94,26 +97,49 @@ def qualifies(item: dict[str, str]) -> tuple[bool, str]:
         return True, "Potential match — verify the 3+ years requirement"
     return False, "Role level unclear"
 
-def telegram_send(message: str) -> None:
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Telegram is not configured yet; skipping notification.")
-        print(message)
-        return
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    response = requests.post(url, json={
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
-        "disable_web_page_preview": False,
-    }, timeout=20)
-    response.raise_for_status()
-    payload = response.json()
-    if not payload.get("ok"):
-        raise RuntimeError(f"Telegram API returned an error: {payload}")
+def email_send(subject: str, text_body: str, html_body: str) -> None:
+    if not EMAIL_TO or not EMAIL_SENDER or not EMAIL_APP_PASSWORD:
+        raise RuntimeError("Email is not configured. Add EMAIL_TO, EMAIL_SENDER, and EMAIL_APP_PASSWORD as GitHub Actions secrets.")
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = EMAIL_SENDER
+    message["To"] = EMAIL_TO
+    message.set_content(text_body)
+    message.add_alternative(html_body, subtype="html")
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as smtp:
+        smtp.login(EMAIL_SENDER, EMAIL_APP_PASSWORD)
+        smtp.send_message(message)
+
+def format_alert(item: dict[str, str]) -> tuple[str, str, str]:
+    subject = f"QA Job Alert: {item['title']}"
+    text_body = (
+        f"NEW SRI LANKA QA OPPORTUNITY\\n\\n"
+        f"Job: {item['title']}\\n"
+        f"Date: {item['date'] or 'Date not shown'}\\n"
+        f"Match: {item['reason']}\\n"
+        f"Link: {item['resolved_link']}\\n\\n"
+        f"Details: {item['description'][:1000] or 'Open the link to review the details.'}\\n\\n"
+        "Automated alert from your Sri Lanka QA Job Hunter."
+    )
+    safe_title = html.escape(item["title"])
+    safe_date = html.escape(item["date"] or "Date not shown")
+    safe_reason = html.escape(item["reason"])
+    safe_description = html.escape(item["description"][:1000] or "Open the link to review the details.")
+    safe_link = html.escape(item["resolved_link"], quote=True)
+    html_body = (
+        '<div style="font-family:Arial,sans-serif;line-height:1.5">'
+        '<h2>🔎 New Sri Lanka QA Opportunity</h2>'
+        f'<h3>{safe_title}</h3>'
+        f'<p><b>Date:</b> {safe_date}<br><b>Match:</b> {safe_reason}</p>'
+        f'<p><a href="{safe_link}">Open LinkedIn result</a></p>'
+        f'<p>{safe_description}</p>'
+        '<hr><small>Automated alert from your Sri Lanka QA Job Hunter.</small></div>'
+    )
+    return subject, text_body, html_body
 
 def main() -> None:
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Telegram is not configured. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID as repository Actions secrets, then run this workflow again.")
-        return
+    if not EMAIL_TO or not EMAIL_SENDER or not EMAIL_APP_PASSWORD:
+        raise RuntimeError("Email is not configured. Add EMAIL_TO, EMAIL_SENDER, and EMAIL_APP_PASSWORD as GitHub Actions secrets.")
 
     seen = load_seen()
     candidates: dict[str, dict[str, str]] = {}
@@ -143,15 +169,8 @@ def main() -> None:
     # Oldest-to-newest ordering is not guaranteed by the RSS feed; cap each run.
     matches = matches[:15]
     for key, item in matches:
-        message = (
-            "🔎 NEW SRI LANKA QA OPPORTUNITY\n\n"
-            f"📌 {item['title']}\n"
-            f"🗓 {item['date'] or 'Date not shown'}\n"
-            f"🎯 Match: {item['reason']}\n\n"
-            f"🔗 {item['resolved_link']}\n\n"
-            f"📝 {item['description'][:700] or 'Open the link to review the details.'}"
-        )
-        telegram_send(message)
+        subject, text_body, html_body = format_alert(item)
+        email_send(subject, text_body, html_body)
         seen.add(key)
         time.sleep(1)
 
